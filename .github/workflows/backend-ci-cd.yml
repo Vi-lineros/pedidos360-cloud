@@ -1,0 +1,65 @@
+name: Deploy Backends ECS
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+env:
+  AWS_REGION: us-east-1
+  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+  ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}
+jobs:
+  build-push-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configurar AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+      - name: Login Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+      
+      - name: Definir variables
+        run: |
+          echo "VENTAS_IMAGE=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/innovatech-ventas:${GITHUB_SHA}" >> $GITHUB_ENV
+          echo "DESPACHOS_IMAGE=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/innovatech-despachos:${GITHUB_SHA}" >> $GITHUB_ENV
+      
+      - name: Build & Push Ventas
+        run: |
+          docker build -t $VENTAS_IMAGE ./back-Ventas_SpringBoot/Springboot-API-REST
+          docker push $VENTAS_IMAGE
+      - name: Build & Push Despachos
+        run: |
+          docker build -t $DESPACHOS_IMAGE ./back-Despachos_SpringBoot/Springboot-API-REST-DESPACHO
+          docker push $DESPACHOS_IMAGE
+
+      - name: Render Deploy Ventas
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: back-Ventas_SpringBoot/ventas-task.json
+          container-name: ventas
+          image: ${{ env.VENTAS_IMAGE }}
+        id: render-ventas
+      - uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-ventas.outputs.task-definition }}
+          service: ${{ secrets.ECS_VENTAS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+      - name: Render Deploy Despachos
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: back-Despachos_SpringBoot/despachos-task.json
+          container-name: despachos
+          image: ${{ env.DESPACHOS_IMAGE }}
+        id: render-despachos
+      - uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-despachos.outputs.task-definition }}
+          service: ${{ secrets.ECS_DESPACHOS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true

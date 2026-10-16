@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  database:
+    image: mysql:8.0
+    container_name: innovatech-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: sanyosalvos_db
+      MYSQL_ROOT_PASSWORD: devops_secure_password
+    ports:
+      # Blindado para acceso local exclusivo y cerrado al exterior en AWS
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - network-innovatech
+
+  ms-ventas:
+    image: ${IMAGE_PREFIX:-innovatech}/ms-ventas:${IMAGE_TAG:-latest}
+    build:
+      context: ./back-Ventas_SpringBoot/Springboot-API-REST
+    container_name: innovatech-ms-ventas
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: "8081"
+      DB_ENDPOINT: "database"
+      DB_PORT: "3306"
+      DB_NAME: "sanyosalvos_db"
+      DB_USERNAME: "root"
+      DB_PASSWORD: "devops_secure_password"
+    ports:
+      - "8081:8081"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - network-innovatech
+
+  ms-despachos:
+    image: ${IMAGE_PREFIX:-innovatech}/ms-despachos:${IMAGE_TAG:-latest}
+    build:
+      context: ./back-Despachos_SpringBoot/Springboot-API-REST-DESPACHO
+    container_name: innovatech-ms-despachos
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: "8082"
+      DB_ENDPOINT: "database"
+      DB_PORT: "3306"
+      DB_NAME: "sanyosalvos_db"
+      DB_USERNAME: "root"
+      DB_PASSWORD: "devops_secure_password"
+    ports:
+      - "8082:8082"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - network-innovatech
+
+  frontend:
+    image: ${IMAGE_PREFIX:-innovatech}/frontend:${IMAGE_TAG:-latest}
+    build:
+      context: ./front_despacho
+    container_name: innovatech-frontend
+    restart: unless-stopped
+    ports:
+      - "80:8080"
+    depends_on:
+      - ms-ventas
+      - ms-despachos
+    networks:
+      - network-innovatech
+
+volumes:
+  db_data:
+    name: db_data
+
+networks:
+  network-innovatech:
+    name: network-innovatech
+    driver: bridge

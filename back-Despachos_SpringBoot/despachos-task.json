@@ -1,0 +1,30 @@
+{
+  "family": "ep3-despachos-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::653540039326:role/LabRole",
+  "taskRoleArn": "arn:aws:iam::653540039326:role/LabRole",
+  "containerDefinitions": [
+    {
+      "name": "despachos",
+      "image": "328520580274.dkr.ecr.us-east-1.amazonaws.com/ep3-despachos:latest",
+      "portMappings": [ { "containerPort": 8082, "protocol": "tcp" } ],
+      "environment": [
+        { "name": "SERVER_PORT", "value": "8082" },
+        { "name": "SPRING_DATASOURCE_URL", "value": "jdbc:mysql://innovatech-db.cg8fny2jljli.us-east-1.rds.amazonaws.com:3306/despachos" },
+        { "name": "SPRING_DATASOURCE_USERNAME", "value": "admin123" },
+        { "name": "SPRING_DATASOURCE_PASSWORD", "value": "195723bB+" }
+      ],
+      "logConfiguration": { 
+        "logDriver": "awslogs", 
+        "options": { 
+          "awslogs-group": "/ecs/ep3-despachos",  
+          "awslogs-region": "us-east-1", 
+          "awslogs-stream-prefix": "ecs" 
+        } 
+      }
+    }
+  ]
+}
