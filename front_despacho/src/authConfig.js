@@ -17,6 +17,6 @@ export const loginRequest = {
 export const protectedResources = {
   api: {
     endpoint: import.meta.env.VITE_API_URL_VENTAS,
-    scopes: ['api://bd5a9a79-78e1-4d51-9c7e-4f8c8c6331b0/access_as_user'],
+    scopes: ['api://0ca4fc8d-b22c-46b7-8786-cfa1acfa1e76/access_as_user'],
   }
 };
