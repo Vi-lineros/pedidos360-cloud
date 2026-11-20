@@ -2,6 +2,7 @@ package persistence.service;
 
 import com.citt.persistence.entity.Venta;
 import com.citt.persistence.repository.VentaRepository;
+import com.citt.persistence.services.VentaKafkaProducer;
 import com.citt.persistence.services.VentaServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,6 +23,9 @@ public class VentaServiceTest {
 
     @Mock
     private VentaRepository ventaRepository;
+
+    @Mock
+    private VentaKafkaProducer ventaKafkaProducer;
 
     @InjectMocks
     private VentaServiceImpl ventaService;

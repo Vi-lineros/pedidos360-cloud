@@ -1,6 +1,7 @@
 package com.citt.persistence.services;
 
 import com.citt.exceptions.DespachoNotFoundException;
+import com.citt.exceptions.dto.PedidoEventoDTO;
 import com.citt.persistence.entity.Despacho;
 
 import java.util.List;
@@ -11,4 +12,5 @@ public interface DespachoService {
     Despacho updateDespacho(Long idDespacho, Despacho despacho) throws DespachoNotFoundException;
     void deleteDespacho(Long idDespacho) throws DespachoNotFoundException, DespachoNotFoundException;
     Despacho findById(Long idDespacho) throws DespachoNotFoundException;
+    void procesarEventoVenta(PedidoEventoDTO evento);
 }

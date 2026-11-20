@@ -1,6 +1,7 @@
 package com.citt.persistence.services;
 
 import com.citt.exceptions.VentaNotFoundException;
+import com.citt.exceptions.dto.PedidoEventoDTO;
 import com.citt.persistence.entity.Venta;
 
 import java.util.List;
@@ -11,4 +12,5 @@ public interface VentaService {
     Venta updateVenta(Long idVenta, Venta venta) throws VentaNotFoundException;
     void deleteVenta(Long idVenta) throws VentaNotFoundException;
     Venta findById(Long idVenta) throws VentaNotFoundException;
+    void procesarEventoDespacho(PedidoEventoDTO evento);
 }

@@ -1,0 +1,6 @@
+.DS_Store
+.vscode/
+**/target/
+*.log
+.env
+front_despacho/dist/
